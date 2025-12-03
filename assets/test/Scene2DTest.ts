@@ -4,7 +4,6 @@ import { GameEventNames } from '../core/GameEvents';
 import { ENTITY_TAGS, Faction } from '../core/Constants';
 import { AIComponent, HealthComponent, MemberOfFaction, TagComponent, TransformComponent } from '../core/components';
 import { initializeAIBehaviorTree } from '../core/ai/AIBehaviorTreeInitializer';
-import { IWorld } from '@bl-framework/ecs';
 import { BehaviorTreeComponent } from '@bl-framework/behaviortree-ecs';
 const { ccclass, property } = _decorator;
 
@@ -39,7 +38,7 @@ export class Scene2DTest extends Component {
         entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_1);
         entity.getOrCreateComponent(AIComponent);
         entity.getOrCreateComponent(HealthComponent);
-        initializeAIBehaviorTree(this.gameManager.world as IWorld, entity);
+        initializeAIBehaviorTree(this.gameManager.world, entity);
         let btComponent = entity.getComponent(BehaviorTreeComponent);
         btComponent.blackboard.set('d_velocity', new Vec2(10, 0));
     }
@@ -51,14 +50,14 @@ export class Scene2DTest extends Component {
         entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_2);
         entity.getOrCreateComponent(AIComponent);
         entity.getOrCreateComponent(HealthComponent);
-        initializeAIBehaviorTree(this.gameManager.world as IWorld, entity);
+        initializeAIBehaviorTree(this.gameManager.world, entity);
         let btComponent = entity.getComponent(BehaviorTreeComponent);
         btComponent.blackboard.set('d_velocity', new Vec2(-10, 0));
     }
 
     private createBase_1() {
         let entity = this.gameManager.createEntity('base1');
-        entity.getComponent(TransformComponent).position.set(-800, 400);
+        entity.getComponent(TransformComponent).position.set(-600, 300);
         entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_1);
         entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_1);
         entity.getOrCreateComponent(HealthComponent);
@@ -66,7 +65,7 @@ export class Scene2DTest extends Component {
 
     private createBase_2() {
         let entity = this.gameManager.createEntity('base2');
-        entity.getComponent(TransformComponent).position.set(800, 400);
+        entity.getComponent(TransformComponent).position.set(600, 300);
         entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_2);
         entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_2);
         entity.getOrCreateComponent(HealthComponent);

@@ -28,7 +28,7 @@ export const GameConfig = {
         DEFAULT_ATTACK_COOLDOWN: 1000,
         
         /** AI 搜索敌人的半径（网格单位） */
-        SEARCH_RADIUS: 4,
+        SEARCH_RADIUS: 400,
     },
     
     /**

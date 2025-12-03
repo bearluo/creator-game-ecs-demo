@@ -3,7 +3,7 @@
  * 负责为实体创建和初始化行为树组件
  */
 
-import { Entity, IWorld, World } from '@bl-framework/ecs';
+import { Entity, World } from '@bl-framework/ecs';
 import { BehaviorTreeComponent } from '@bl-framework/behaviortree-ecs';
 import { AIComponent, TransformComponent, VelocityComponent, MemberOfFaction } from '../components';
 import { GameConfig } from '../GameConfig';
@@ -15,7 +15,7 @@ import { createChaserBehaviorTree } from './ChaserBehaviorTree';
  * @param entity 实体
  * @param attackRange 攻击范围（可选，从AIComponent获取）
  */
-export function initializeAIBehaviorTree<T extends IWorld>(world: T, entity: Entity, attackRange?: number): void {
+export function initializeAIBehaviorTree(world: World, entity: Entity, attackRange?: number): void {
     // 检查实体是否已有必要的组件
     const transform = entity.getComponent(TransformComponent);
     const velocity = entity.getComponent(VelocityComponent);

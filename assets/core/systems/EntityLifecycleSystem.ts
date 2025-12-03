@@ -6,7 +6,6 @@
 
 import { Entity, system, System } from '@bl-framework/ecs';
 import { ECS_SYSTEM_PRIORITYS } from '../Constants';
-import { IExtendedWorld } from '../types/ECSTypes';
 
 @system({
     name: 'EntityLifecycleSystem',
@@ -38,7 +37,8 @@ export class EntityLifecycleSystem extends System {
         }
 
         // 获取 GameManager 引用
-        const gameManager = (this.world as IExtendedWorld).gameManager;
+        // 使用声明合并扩展，无需类型断言
+        const gameManager = this.world.gameManager;
         if (!gameManager) {
             console.warn('[EntityLifecycleSystem] GameManager not found, cannot destroy entities properly');
             // 后备方案：直接销毁实体（不推荐）

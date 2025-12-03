@@ -28,6 +28,7 @@ export class PrefabFactory {
     putEntity(name: string, node: Node) {
         assert(this._prefab_pools.has(name), `预制体工厂未注册: ${name}`);
         this._prefab_pools.get(name).free(node);
+        node.parent = null;
     }
 }
 /**

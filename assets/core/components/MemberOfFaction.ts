@@ -7,7 +7,7 @@ import { Faction, FactionRelation } from '../Constants';
  */
 export class MemberOfFaction extends Component {
     /** 实体所属阵营 */
-    private faction: Faction;
+    private faction: Faction = Faction.NULL;
 
     /**
      * 设置阵营
@@ -34,6 +34,6 @@ export class MemberOfFaction extends Component {
     /** 重置组件 */
     reset(): void {
         super.reset();
-        this.faction = null;
+        this.faction = Faction.NULL;
     }
 }

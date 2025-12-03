@@ -7,7 +7,6 @@ import { BehaviorTreeSystem } from '@bl-framework/behaviortree-ecs';
 import { MovementSystem, RenderSystem, SpatialIndexSystem, AIBlackboardUpdateSystem, AIBehaviorTreeInitSystem, EntityLifecycleSystem } from './systems';
 import { TransformComponent,RenderComponent,TagComponent, VelocityComponent, FaceComponent } from './components';
 import { initializeAIBehaviorTree } from './ai/AIBehaviorTreeInitializer';
-import { IExtendedWorld } from './types/ECSTypes';
 import { GameConfig } from './GameConfig';
 import { ConfigValidator } from './ConfigValidator';
 const { ccclass, property } = _decorator;
@@ -203,7 +202,8 @@ export class GameManager extends Component {
         });
 
         // 在 World 上存储 GameManager 引用，以便其他系统访问
-        (this.world as IExtendedWorld).gameManager = this;
+        // 使用声明合并扩展，无需类型断言
+        this.world.gameManager = this;
 
         // 注册系统（按优先级顺序执行）
         // 优先级 0: 初始化系统

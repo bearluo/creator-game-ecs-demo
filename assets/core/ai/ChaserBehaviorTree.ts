@@ -3,12 +3,11 @@
  * 将原有的硬编码追击逻辑转换为行为树
  */
 
-import { BehaviorTreeBuilder, NodeStatus } from '@bl-framework/behaviortree';
-import { Entity, IWorld, World } from '@bl-framework/ecs';
+import { BehaviorTreeBuilder, Blackboard, NodeStatus } from '@bl-framework/behaviortree';
+import { Entity, World } from '@bl-framework/ecs';
 import { TransformComponent, VelocityComponent, MemberOfFaction, AIComponent, HealthComponent } from '../components';
 import { SpatialIndexSystem, EntityLifecycleSystem } from '../systems';
 import { GameConfig } from '../GameConfig';
-import { IBlackboard, IExtendedWorld } from '../types/ECSTypes';
 import { Vec2 } from 'cc';
 
 const tmpVec2 = new Vec2();
@@ -19,7 +18,7 @@ const tmpVec2 = new Vec2();
  * @param entity 实体实例
  * @returns 行为树实例
  */
-export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
+export function createChaserBehaviorTree(world: World, entity: Entity) {
     const builder = new BehaviorTreeBuilder();
 
     const tree = builder
@@ -27,7 +26,9 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
             // 攻击逻辑分支：如果有目标且在攻击范围内且冷却时间已过则攻击
             .sequence('attackTarget')
                 .condition('hasTargetAndInRange', (blackboard) => {
-                    const target = blackboard.get<Entity>('nearestTarget', null);
+                    const targetId = blackboard.get<number>('nearestTarget', NaN);
+                    if (isNaN(targetId)) return false;
+                    const target = world.getEntity(targetId);
                     if (!target) return false;
                     
                     // 检查目标是否存活
@@ -53,7 +54,9 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
                     return ai.canAttack();
                 })
                 .action('attack', (blackboard) => {
-                    const target = blackboard.get<Entity>('nearestTarget');
+                    const targetId = blackboard.get<number>('nearestTarget');
+                    if (isNaN(targetId)) return NodeStatus.FAILURE;
+                    const target = world.getEntity(targetId);
                     if (!target) return NodeStatus.FAILURE;
                     
                     const ai = entity.getComponent(AIComponent);
@@ -71,7 +74,7 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
                         
                         // 如果目标死亡，清除目标
                         if (!targetHealth.isAlive()) {
-                            blackboard.set('nearestTarget', null);
+                            blackboard.set('nearestTarget', NaN);
                             
                             // 标记实体待销毁，将在帧末统一处理
                             const lifecycleSystem = world.getSystem(EntityLifecycleSystem);
@@ -95,13 +98,15 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
             // 追击逻辑分支：如果有目标且未在攻击范围内，则追击
             .sequence('chaseTarget')
                 .condition('hasTarget', (blackboard) => {
-                    const target = blackboard.get<Entity>('nearestTarget', null);
+                    const targetId = blackboard.get<number>('nearestTarget', NaN);
+                    if (isNaN(targetId)) return false;
+                    const target = world.getEntity(targetId);
                     if (!target) return false;
                     
                     // 检查目标是否存活
                     const targetHealth = target.getComponent(HealthComponent);
                     if (targetHealth && !targetHealth.isAlive()) {
-                        blackboard.set('nearestTarget', null);
+                        blackboard.set('nearestTarget', NaN);
                         return false;
                     }
                     
@@ -110,7 +115,9 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
                 .action('chaseTarget', (blackboard) => {
                     const transform = entity.getComponent(TransformComponent);
                     const velocity = entity.getComponent(VelocityComponent);
-                    const nearestTarget = blackboard.get<Entity>('nearestTarget');
+                    const nearestTargetId = blackboard.get<number>('nearestTarget');
+                    if (isNaN(nearestTargetId)) return NodeStatus.FAILURE;
+                    const nearestTarget = world.getEntity(nearestTargetId);
                     if (!nearestTarget) return NodeStatus.FAILURE;
                     
                     const targetTransform = nearestTarget.getComponent(TransformComponent);
@@ -182,7 +189,7 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
                         return NodeStatus.FAILURE;
                     }
 
-                    blackboard.set('nearestTarget', nearestTarget);
+                    blackboard.set('nearestTarget', nearestTarget.id);
                     return NodeStatus.SUCCESS;
                 })
             .end()
@@ -212,7 +219,13 @@ export function createChaserBehaviorTree(world: IWorld, entity: Entity) {
  * @param world ECS World实例
  * @param entity 当前实体
  */
-export function updateChaserBlackboard(blackboard: IBlackboard, world: IExtendedWorld, entity: Entity) {
+/**
+ * 更新行为树的黑板数据（敌人列表）
+ * @param blackboard 黑板对象（来自 BehaviorTreeComponent.blackboard）
+ * @param world ECS World实例
+ * @param entity 当前实体
+ */
+export function updateChaserBlackboard(blackboard: Blackboard, world: World, entity: Entity) {
     const transform = entity.getComponent(TransformComponent);
     const faction = entity.getComponent(MemberOfFaction);
     
