@@ -1,0 +1,13 @@
+{
+  "name": "war",
+  "uuid": "100927bf-d68c-46b8-9751-dda33415cc67",
+  "creator": {
+    "version": "3.8.7"
+  },
+  "dependencies": {
+    "@bl-framework/core": "^1.0.0",
+    "@bl-framework/ecs": "^1.0.0",
+    "@bl-framework/behaviortree": "^1.0.0",
+    "@bl-framework/behaviortree-ecs": "^1.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "entities": [
+        {
+            "name": "zombie",
+            "prefab_path": "entity/zombie/zombie",
+            "pool_size": 10,
+            "shrink_threshold": 10
+        },
+        {
+            "name": "base1",
+            "prefab_path": "entity/base/base_1",
+            "pool_size": 1,
+            "shrink_threshold": 10
+        },
+        {
+            "name": "base2",
+            "prefab_path": "entity/base/base_2",
+            "pool_size": 1,
+            "shrink_threshold": 10
+        }
+    ]
+}
