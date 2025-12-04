@@ -1,4 +1,14 @@
 {
   "__version__": "1.0.6",
-  "custom_joint_texture_layouts": []
+  "custom_joint_texture_layouts": [],
+  "layer": [
+    {
+      "name": "GAME_UI_LAYER",
+      "value": 2
+    },
+    {
+      "name": "GAME_LAYER",
+      "value": 1
+    }
+  ]
 }

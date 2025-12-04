@@ -1,9 +1,9 @@
 # Memory Bank: Progress
 
 ## Current Status
-**ARCHIVE 模式 - 归档完成**
+**准备下一个任务**
 
-架构优化任务（Level 3）阶段 1-2 全部完成，阶段 3 部分完成。所有文档已归档。
+EntityFactory 工具类任务（Level 2）已完成并归档。Memory Bank 已准备就绪，可以开始新任务。
 
 ## Completed Milestones
 
@@ -267,5 +267,28 @@
 
 ---
 
-**下一步**: 可以继续实施阶段 3 的其他优化（测试框架、文档完善），或进行测试验证
+---
+
+## 2024 - EntityFactory 工具类 ✅
+
+**任务**: 实现不同实体创建的工具类 (Level 2)
+
+**文件创建**:
+- `assets/core/EntityTypeConfig.ts`: 实体类型配置接口定义
+- `assets/core/EntityTypeConfigs.ts`: 实体类型静态配置
+- `assets/core/EntityFactory.ts`: 实体工厂类实现
+
+**文件修改**:
+- `assets/core/GameManager.ts`: 集成 EntityFactory，重构 createEntity 方法
+- `assets/test/Scene2DTest.ts`: 使用新的 EntityFactory API，简化实体创建代码
+
+**成果**:
+- ✅ 代码简化：Scene2DTest.ts 中的实体创建代码从 10+ 行减少到 5-6 行
+- ✅ 类型安全：使用 TypeScript 类型系统，编译时检查实体类型
+- ✅ 向后兼容：保留了旧版方法，确保现有代码不会破坏
+- ✅ 集中管理：所有实体类型配置集中在 EntityTypeConfigs.ts 中
+
+**归档**: `memory-bank/archive/archive-entity-factory.md`
+
+**下一步**: 运行时测试验证功能，或开始新任务
 

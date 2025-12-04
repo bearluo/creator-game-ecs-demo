@@ -9,12 +9,18 @@ import { TransformComponent,RenderComponent,TagComponent, VelocityComponent, Fac
 import { initializeAIBehaviorTree } from './ai/AIBehaviorTreeInitializer';
 import { GameConfig } from './GameConfig';
 import { ConfigValidator } from './ConfigValidator';
+import { EntityFactory } from './EntityFactory';
+import { EntityType } from './EntityTypeConfigs';
+import { EntityCreateOptions } from './EntityTypeConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
 export class GameManager extends Component {
 
     _prefabFactory: PrefabFactory = new PrefabFactory();
+    
+    /** 实体工厂 */
+    private _entityFactory: EntityFactory | null = null;
 
     world:World = new World();
 
@@ -65,32 +71,14 @@ export class GameManager extends Component {
     }
 
     /**
-     * 在随机位置创建实体
+     * 创建实体
      * @param entityName 实体名称
-     * @param minX 最小X坐标
-     * @param maxX 最大X坐标 
-     * @param minY 最小Y坐标
-     * @param maxY 最大Y坐标
+     * @param options 创建选项（位置、阵营、标签等）
      * @returns 创建的实体
      */
-    createEntity(entityName: string): Entity {
-        const node = this._prefabFactory.getEntity(entityName);
-        node.parent = this.rootNode;
-        const entity = this.world.createEntity(entityName);
-        entity.addComponent(TransformComponent);
-        entity.addComponent(VelocityComponent);
-        entity.addComponent(RenderComponent).node = node;
-        entity.addComponent(FaceComponent);
-        
-        // 实体创建后，标记空间索引系统为脏
-        if (this._init) {
-            const spatialIndexSystem = this.world.getSystem(SpatialIndexSystem);
-            if (spatialIndexSystem) {
-                spatialIndexSystem.markDirty();
-            }
-        }
-        
-        return entity;
+    createEntity(entityName: string, options?: EntityCreateOptions): Entity {
+        // 使用 EntityFactory 创建实体
+        return this._entityFactory.createEntity(entityName as EntityType, options);
     }
 
     /**
@@ -177,6 +165,13 @@ export class GameManager extends Component {
         this._init = true;
 
         this.initWorld();
+        
+        // 初始化 EntityFactory
+        this._entityFactory = new EntityFactory(
+            this.world,
+            this._prefabFactory,
+            this.rootNode
+        );
 
         app.manager.event.emit(GameEventNames.GAME_INIT);
     }
@@ -240,4 +235,5 @@ interface IPrefabConfig {
     pool_size?: number;
     shrink_threshold?: number;
 }
+
 

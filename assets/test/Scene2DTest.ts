@@ -2,8 +2,7 @@ import { _decorator, Component, Node, Vec2 } from 'cc';
 import { GameManager } from '../core/GameManager';
 import { GameEventNames } from '../core/GameEvents';
 import { ENTITY_TAGS, Faction } from '../core/Constants';
-import { AIComponent, HealthComponent, MemberOfFaction, TagComponent, TransformComponent } from '../core/components';
-import { initializeAIBehaviorTree } from '../core/ai/AIBehaviorTreeInitializer';
+import { TransformComponent } from '../core/components';
 import { BehaviorTreeComponent } from '@bl-framework/behaviortree-ecs';
 const { ccclass, property } = _decorator;
 
@@ -32,43 +31,47 @@ export class Scene2DTest extends Component {
     }
 
     private createPlayer_1() {
-        let entity = this.gameManager.createEntity('zombie');
-        entity.getComponent(TransformComponent).position.set(-500, this.getRandomY());
-        entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_1);
-        entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_1);
-        entity.getOrCreateComponent(AIComponent);
-        entity.getOrCreateComponent(HealthComponent);
-        initializeAIBehaviorTree(this.gameManager.world, entity);
-        let btComponent = entity.getComponent(BehaviorTreeComponent);
-        btComponent.blackboard.set('d_velocity', new Vec2(10, 0));
+        const entity = this.gameManager.createEntity('zombie', {
+            position: new Vec2(-500, this.getRandomY()),
+            faction: Faction.Player_1,
+            tag: ENTITY_TAGS.PLAYER_1
+        });
+        
+        // 设置初始速度（通过行为树黑板）
+        const btComponent = entity.getComponent(BehaviorTreeComponent);
+        if (btComponent && btComponent.blackboard) {
+            btComponent.blackboard.set('d_velocity', new Vec2(10, 0));
+        }
     }
 
     private createPlayer_2() {
-        let entity = this.gameManager.createEntity('zombie');
-        entity.getComponent(TransformComponent).position.set(500, this.getRandomY());
-        entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_2);
-        entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_2);
-        entity.getOrCreateComponent(AIComponent);
-        entity.getOrCreateComponent(HealthComponent);
-        initializeAIBehaviorTree(this.gameManager.world, entity);
-        let btComponent = entity.getComponent(BehaviorTreeComponent);
-        btComponent.blackboard.set('d_velocity', new Vec2(-10, 0));
+        const entity = this.gameManager.createEntity('zombie', {
+            position: new Vec2(500, this.getRandomY()),
+            faction: Faction.Player_2,
+            tag: ENTITY_TAGS.PLAYER_2
+        });
+        
+        // 设置初始速度（通过行为树黑板）
+        const btComponent = entity.getComponent(BehaviorTreeComponent);
+        if (btComponent && btComponent.blackboard) {
+            btComponent.blackboard.set('d_velocity', new Vec2(-10, 0));
+        }
     }
 
     private createBase_1() {
-        let entity = this.gameManager.createEntity('base1');
-        entity.getComponent(TransformComponent).position.set(-600, 300);
-        entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_1);
-        entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_1);
-        entity.getOrCreateComponent(HealthComponent);
+        this.gameManager.createEntity('base1', {
+            position: new Vec2(-600, 300),
+            faction: Faction.Player_1,
+            tag: ENTITY_TAGS.PLAYER_1
+        });
     }
 
     private createBase_2() {
-        let entity = this.gameManager.createEntity('base2');
-        entity.getComponent(TransformComponent).position.set(600, 300);
-        entity.getOrCreateComponent(TagComponent).addTag(ENTITY_TAGS.PLAYER_2);
-        entity.getOrCreateComponent(MemberOfFaction).setFaction(Faction.Player_2);
-        entity.getOrCreateComponent(HealthComponent);
+        this.gameManager.createEntity('base2', {
+            position: new Vec2(600, 300),
+            faction: Faction.Player_2,
+            tag: ENTITY_TAGS.PLAYER_2
+        });
     }
 
     private getRandomX(): number {
