@@ -3,8 +3,12 @@ import { Vec2 } from "cc";
 import { TransformComponent, VelocityComponent } from "../components";
 import { GameConfig } from "../GameConfig";
 
-
-export class AIComponent extends Component {
+/**
+ * 战斗组件
+ * 存储实体的战斗相关数据，包括攻击属性、战斗状态等
+ * 注意：AI逻辑在行为树系统中，此组件仅存储数据
+ */
+export class CombatComponent extends Component {
     public attackRange: number = GameConfig.AI.DEFAULT_ATTACK_RANGE; // 攻击范围
     public attackDamage: number = GameConfig.AI.DEFAULT_ATTACK_DAMAGE; // 攻击伤害
     public attackCooldown: number = GameConfig.AI.DEFAULT_ATTACK_COOLDOWN; // 攻击冷却时间（毫秒）
@@ -13,7 +17,6 @@ export class AIComponent extends Component {
     public currentState: string = 'idle'; // 当前状态
     public lastStateChangeTime: number = 0; // 上次状态改变时间
     public lastAttackTime: number = 0; // 上次攻击时间
-    public target: Entity | null = null; // 目标实体
     
     constructor() {
         super();
@@ -30,7 +33,7 @@ export class AIComponent extends Component {
     }
     
     /**
-     * 改变AI状态
+     * 改变战斗状态
      */
     public changeState(newState: string): void {
         if (this.currentState !== newState) {

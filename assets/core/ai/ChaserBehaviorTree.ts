@@ -4,11 +4,13 @@
  */
 
 import { BehaviorTreeBuilder, Blackboard, NodeStatus } from '@bl-framework/behaviortree';
+import { BehaviorTreeComponent } from '@bl-framework/behaviortree-ecs';
 import { Entity, World } from '@bl-framework/ecs';
-import { TransformComponent, VelocityComponent, MemberOfFaction, AIComponent, HealthComponent } from '../components';
+import { TransformComponent, VelocityComponent, MemberOfFaction, CombatComponent, HealthComponent } from '../components';
 import { SpatialIndexSystem, EntityLifecycleSystem } from '../systems';
 import { GameConfig } from '../GameConfig';
 import { Vec2 } from 'cc';
+import { ZombieView } from '../view';
 
 const tmpVec2 = new Vec2();
 
@@ -49,7 +51,7 @@ export function createChaserBehaviorTree(world: World, entity: Entity) {
                 })
                 .condition('canAttack', (blackboard) => {
                     // 检查攻击冷却时间
-                    const ai = entity.getComponent(AIComponent);
+                    const ai = entity.getComponent(CombatComponent);
                     if (!ai) return false;
                     return ai.canAttack();
                 })
@@ -59,39 +61,56 @@ export function createChaserBehaviorTree(world: World, entity: Entity) {
                     const target = world.getEntity(targetId);
                     if (!target) return NodeStatus.FAILURE;
                     
-                    const ai = entity.getComponent(AIComponent);
+                    const ai = entity.getComponent(CombatComponent);
                     if (!ai) return NodeStatus.FAILURE;
-                    
+    
                     // 获取目标的生命值组件
                     const targetHealth = target.getComponent(HealthComponent);
                     if (targetHealth && targetHealth.isAlive()) {
-                        // 造成伤害
-                        const damage = ai.attackDamage;
-                        targetHealth.takeDamage(damage);
+                        
+                        const zombieView = entity.getComponent(ZombieView);
+                        const callback = () => {
+                            // 造成伤害
+                            const damage = ai.attackDamage;
+                            targetHealth.takeDamage(damage);
+                            blackboard.set('isAttackFinished', true);
+                            // 如果目标死亡，清除目标
+                            if (!targetHealth.isAlive()) {
+                                blackboard.set('nearestTarget', NaN);
+                                
+                                // 标记实体待销毁，将在帧末统一处理
+                                const lifecycleSystem = world.getSystem(EntityLifecycleSystem);
+                                if (lifecycleSystem) {
+                                    lifecycleSystem.markEntityForDestroy(target.id);
+                                } else {
+                                    // 后备方案：直接销毁（不推荐，但确保功能正常）
+                                    console.warn('[ChaserBehaviorTree] EntityLifecycleSystem not found, destroying entity directly');
+                                    world.destroyEntity(target.id);
+                                }
+                            }
+                        }
+                        if (zombieView) {
+                            zombieView.playAttack(callback);
+                        } else {
+                            callback();
+                        }
                         
                         // 记录攻击时间
                         ai.recordAttack();
-                        
-                        // 如果目标死亡，清除目标
-                        if (!targetHealth.isAlive()) {
-                            blackboard.set('nearestTarget', NaN);
-                            
-                            // 标记实体待销毁，将在帧末统一处理
-                            const lifecycleSystem = world.getSystem(EntityLifecycleSystem);
-                            if (lifecycleSystem) {
-                                lifecycleSystem.markEntityForDestroy(target.id);
-                            } else {
-                                // 后备方案：直接销毁（不推荐，但确保功能正常）
-                                console.warn('[ChaserBehaviorTree] EntityLifecycleSystem not found, destroying entity directly');
-                                world.destroyEntity(target.id);
-                            }
-                        }
                         
                         // 攻击动作完成，返回成功
                         return NodeStatus.SUCCESS;
                     }
                     
                     return NodeStatus.FAILURE;
+                })
+                .action('attacking', (blackboard) => {
+                    const isAttackFinished = blackboard.get<boolean>('isAttackFinished', false);
+                    if (isAttackFinished) {
+                        blackboard.set('isAttackFinished', false);
+                        return NodeStatus.SUCCESS;
+                    }
+                    return NodeStatus.RUNNING;
                 })
             .end()
 
@@ -146,6 +165,10 @@ export function createChaserBehaviorTree(world: World, entity: Entity) {
 
             // 搜索敌人逻辑分支
             .sequence('searchEnemy')
+                .action('searchEnemy', (blackboard) => {
+                    updateChaserBlackboard(blackboard, world, entity);
+                    return NodeStatus.SUCCESS;
+                })
                 .condition('hasEnemy', (blackboard) => {
                     const enemies = blackboard.get<Entity[]>('enemies', []);
                     return enemies.length > 0;
@@ -219,12 +242,6 @@ export function createChaserBehaviorTree(world: World, entity: Entity) {
  * @param world ECS World实例
  * @param entity 当前实体
  */
-/**
- * 更新行为树的黑板数据（敌人列表）
- * @param blackboard 黑板对象（来自 BehaviorTreeComponent.blackboard）
- * @param world ECS World实例
- * @param entity 当前实体
- */
 export function updateChaserBlackboard(blackboard: Blackboard, world: World, entity: Entity) {
     const transform = entity.getComponent(TransformComponent);
     const faction = entity.getComponent(MemberOfFaction);
@@ -258,5 +275,52 @@ export function updateChaserBlackboard(blackboard: Blackboard, world: World, ent
     });
 
     blackboard.set('enemies', enemies);
+}
+
+/**
+ * 为实体初始化追击者行为树
+ * @param world ECS World实例
+ * @param entity 实体
+ * @param attackRange 攻击范围（可选，从CombatComponent获取）
+ */
+export function initializeChaserBehaviorTree(world: World, entity: Entity, attackRange?: number): void {
+    // 检查实体是否已有必要的组件
+    const transform = entity.getComponent(TransformComponent);
+    const velocity = entity.getComponent(VelocityComponent);
+    const combat = entity.getComponent(CombatComponent);
+    const faction = entity.getComponent(MemberOfFaction);
+
+    if (!transform || !velocity || !faction) {
+        console.warn(`[ChaserBehaviorTree] Entity ${entity.id} missing required components`);
+        return;
+    }
+
+    // 检查是否已有BehaviorTreeComponent
+    let btComponent = entity.getComponent(BehaviorTreeComponent);
+    if (!btComponent) {
+        // 创建并添加BehaviorTreeComponent（使用entity.addComponent）
+        btComponent = entity.addComponent(BehaviorTreeComponent);
+    }
+
+    // 创建行为树
+    const tree = createChaserBehaviorTree(world, entity);
+    btComponent.setBehaviorTree(tree);
+
+    // 设置攻击范围到黑板
+    const attackRangeValue = attackRange ?? combat?.attackRange ?? GameConfig.AI.DEFAULT_ATTACK_RANGE;
+    if (btComponent.blackboard) {
+        btComponent.blackboard.set('attackRange', attackRangeValue);
+    }
+
+    // 设置更新间隔（每帧更新）
+    btComponent.updateInterval = 0;
+
+    // 初始化Entity绑定
+    if (btComponent.entityBinding) {
+        // 可以在这里绑定Entity的组件属性到黑板
+        // 例如：绑定TransformComponent的位置到黑板
+    }
+
+    console.log(`[ChaserBehaviorTree] Behavior tree initialized for entity ${entity.id}`);
 }
 

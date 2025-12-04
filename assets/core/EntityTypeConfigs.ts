@@ -9,13 +9,14 @@ import {
     VelocityComponent, 
     RenderComponent, 
     FaceComponent,
-    AIComponent,
+    CombatComponent,
     HealthComponent,
     MemberOfFaction,
     TagComponent
 } from './components';
 import { Faction, ENTITY_TAGS } from './Constants';
-import { initializeAIBehaviorTree } from './ai/AIBehaviorTreeInitializer';
+import { initializeChaserBehaviorTree } from './ai/ChaserBehaviorTree';
+import { ZombieView } from './view';
 
 /**
  * 实体类型配置映射
@@ -29,9 +30,10 @@ export const EntityTypeConfigs = {
             VelocityComponent,
             RenderComponent,
             FaceComponent,
-            AIComponent,
+            CombatComponent,
             MemberOfFaction,
-            HealthComponent
+            HealthComponent,
+            ZombieView,
         ],
         onInit: (entity, world, options) => {
             // 设置阵营
@@ -47,8 +49,13 @@ export const EntityTypeConfigs = {
                 entity.getOrCreateComponent(TagComponent).addTag(options.tag);
             }
             
+            const renderComp = entity.getComponent(RenderComponent);
+            const zombieView = entity.getComponent(ZombieView);
+            if (zombieView) {
+                zombieView.initAnimation(renderComp);
+            }
             // 初始化行为树
-            initializeAIBehaviorTree(world, entity);
+            initializeChaserBehaviorTree(world, entity);
         }
     } as EntityTypeConfig,
     

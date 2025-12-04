@@ -1,4 +1,4 @@
-export * from './AIComponent';
+export * from './CombatComponent';
 export * from './HealthComponent';
 export * from './TransformComponent';
 export * from './RenderComponent';

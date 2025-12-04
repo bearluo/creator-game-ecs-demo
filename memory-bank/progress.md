@@ -3,7 +3,7 @@
 ## Current Status
 **准备下一个任务**
 
-EntityFactory 工具类任务（Level 2）已完成并归档。Memory Bank 已准备就绪，可以开始新任务。
+移除 BehaviorTreeBlackboardSystem 任务（Level 1）已完成并归档。Memory Bank 已准备就绪，可以开始新任务。
 
 ## Completed Milestones
 
@@ -291,4 +291,91 @@ EntityFactory 工具类任务（Level 2）已完成并归档。Memory Bank 已�
 **归档**: `memory-bank/archive/archive-entity-factory.md`
 
 **下一步**: 运行时测试验证功能，或开始新任务
+
+---
+
+## 2024 - AIComponent 重命名为 CombatComponent ✅
+
+**任务**: 将 AIComponent 修改成更合适的命名 (Level 1)
+
+**文件重命名**:
+- `assets/core/components/AIComponent.ts` → `assets/core/components/CombatComponent.ts`
+
+**文件修改**:
+- `assets/core/components/index.ts`: 更新导出
+- `assets/core/EntityTypeConfigs.ts`: 更新导入和配置
+- `assets/core/EntityTypeConfig.ts`: 更新导入
+- `assets/core/ai/BaseBehaviorTree.ts`: 更新所有引用，优化变量命名
+- `assets/core/ai/ChaserBehaviorTree.ts`: 更新所有引用
+- `assets/core/ai/AIBehaviorTreeInitializer.ts`: 更新导入和引用
+- `assets/core/systems/AIBehaviorTreeInitSystem.ts`: 更新导入、注释和查询
+
+**成果**:
+- ✅ 组件命名更准确：CombatComponent 更准确地反映其功能（存储战斗数据）
+- ✅ 代码质量改进：添加了清晰的组件注释，更新了方法注释
+- ✅ 变量命名优化：在 BaseBehaviorTree 中将 `ai` 改为 `combat`
+- ✅ 无编译错误：所有引用已更新，类型检查通过
+
+**重命名理由**:
+AIComponent 主要存储战斗相关数据（攻击范围、伤害、冷却时间、战斗状态），而不是通用的AI逻辑。AI逻辑实际上在行为树系统中实现。因此重命名为 CombatComponent（战斗组件）更准确地反映其功能。
+
+**反思文档**: `memory-bank/reflection/reflection-ai-component-rename.md`
+
+**下一步**: 归档任务文档，或开始新任务
+
+---
+
+## 2024 - AI 行为树代码结构整理 ✅
+
+**任务**: 整理 AI 行为树代码结构 (Level 2)
+
+**文件修改**:
+- `assets/core/ai/ChaserBehaviorTree.ts`: 添加 `initializeChaserBehaviorTree` 函数
+- `assets/core/EntityTypeConfigs.ts`: 更新导入和调用
+- `assets/core/EntityTypeConfig.ts`: 清理未使用的导入
+- `assets/core/GameManager.ts`: 移除系统注册，更新导入
+- `assets/core/systems/index.ts`: 更新导出
+- `assets/core/systems/BehaviorTreeBlackboardSystem.ts`: 重命名后的文件
+
+**文件删除**:
+- `assets/core/ai/AIBehaviorTreeInitializer.ts`: 不再需要
+- `assets/core/systems/AIBehaviorTreeInitSystem.ts`: 不再需要
+
+**成果**:
+- ✅ 代码组织更清晰：初始化函数迁移到对应的行为树文件中
+- ✅ 命名更合理：`initializeAIBehaviorTree` → `initializeChaserBehaviorTree`，`AIBlackboardUpdateSystem` → `BehaviorTreeBlackboardSystem`
+- ✅ 系统简化：移除了不必要的自动初始化系统
+- ✅ 无编译错误：所有引用已更新，类型检查通过
+
+**重构理由**:
+初始化函数应该放在对应的行为树文件中，而不是独立的初始化器文件。不必要的系统应该移除，减少系统复杂度。系统名称应该准确反映其功能，避免误导。
+
+**反思文档**: `memory-bank/reflection/reflection-ai-behavior-tree-refactor.md`
+
+**下一步**: 归档任务文档，或开始新任务
+
+---
+
+## 2024 - 移除 BehaviorTreeBlackboardSystem ✅
+
+**任务**: 移除 BehaviorTreeBlackboardSystem (Level 1)
+
+**文件修改**:
+- `assets/core/GameManager.ts`: 移除系统注册和导入
+- `assets/core/systems/index.ts`: 移除导出
+
+**文件删除**:
+- `assets/core/systems/BehaviorTreeBlackboardSystem.ts`: 不再需要
+
+**成果**:
+- ✅ 系统简化：移除了不必要的系统，减少了系统复杂度
+- ✅ 职责分离：黑板更新完全由行为树自己处理
+- ✅ 无编译错误：所有引用已移除，类型检查通过
+
+**移除理由**:
+BehaviorTreeBlackboardSystem 的功能（更新行为树黑板数据）已经由行为树内部的 `updateChaserBlackboard` 函数处理。移除系统后，黑板更新完全由行为树自己处理，更符合职责分离原则。
+
+**归档文档**: `memory-bank/archive/archive-remove-behavior-tree-blackboard-system.md`
+
+**下一步**: 归档任务文档，或开始新任务
 

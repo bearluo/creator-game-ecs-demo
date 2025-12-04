@@ -10,13 +10,12 @@ import {
     VelocityComponent, 
     RenderComponent, 
     FaceComponent,
-    AIComponent,
+    CombatComponent,
     HealthComponent,
     MemberOfFaction,
     TagComponent
 } from './components';
 import { Faction } from './Constants';
-import { initializeAIBehaviorTree } from './ai/AIBehaviorTreeInitializer';
 
 /**
  * 实体创建选项

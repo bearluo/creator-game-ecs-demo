@@ -4,9 +4,8 @@ import { Utils } from './Utils';
 import { GameEventNames } from './GameEvents';
 import { Entity, Query, World } from '@bl-framework/ecs';
 import { BehaviorTreeSystem } from '@bl-framework/behaviortree-ecs';
-import { MovementSystem, RenderSystem, SpatialIndexSystem, AIBlackboardUpdateSystem, AIBehaviorTreeInitSystem, EntityLifecycleSystem } from './systems';
+import { MovementSystem, RenderSystem, SpatialIndexSystem, EntityLifecycleSystem } from './systems';
 import { TransformComponent,RenderComponent,TagComponent, VelocityComponent, FaceComponent } from './components';
-import { initializeAIBehaviorTree } from './ai/AIBehaviorTreeInitializer';
 import { GameConfig } from './GameConfig';
 import { ConfigValidator } from './ConfigValidator';
 import { EntityFactory } from './EntityFactory';
@@ -201,14 +200,8 @@ export class GameManager extends Component {
         this.world.gameManager = this;
 
         // 注册系统（按优先级顺序执行）
-        // 优先级 0: 初始化系统
-        this.world.registerSystem(AIBehaviorTreeInitSystem); // 初始化AI行为树
-        
         // 优先级 10: 数据准备系统
         this.world.registerSystem(SpatialIndexSystem); // 空间索引
-        
-        // 优先级 20: 数据更新系统
-        this.world.registerSystem(AIBlackboardUpdateSystem); // 更新AI黑板数据
         
         // 优先级 30: 逻辑执行系统
         this.world.registerSystem(BehaviorTreeSystem); // 执行行为树
