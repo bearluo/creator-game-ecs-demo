@@ -176,9 +176,8 @@ export function createChaserBehaviorTree(world: World, entity: Entity) {
                 .action('searchNearestEnemy', (blackboard) => {
                     const enemies = blackboard.get<Entity[]>('enemies', []);
                     const transform = entity.getComponent(TransformComponent);
-                    const velocity = entity.getComponent(VelocityComponent);
 
-                    if (!transform || !velocity || enemies.length === 0) {
+                    if (!transform || enemies.length === 0) {
                         return NodeStatus.FAILURE;
                     }
 

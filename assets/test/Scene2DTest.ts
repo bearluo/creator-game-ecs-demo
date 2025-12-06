@@ -60,7 +60,7 @@ export class Scene2DTest extends Component {
 
     private createBase_1() {
         this.gameManager.createEntity('base1', {
-            position: new Vec2(-600, 300),
+            position: new Vec2(-600, 0),
             faction: Faction.Player_1,
             tag: ENTITY_TAGS.PLAYER_1
         });
@@ -68,7 +68,7 @@ export class Scene2DTest extends Component {
 
     private createBase_2() {
         this.gameManager.createEntity('base2', {
-            position: new Vec2(600, 300),
+            position: new Vec2(600, 0),
             faction: Faction.Player_2,
             tag: ENTITY_TAGS.PLAYER_2
         });

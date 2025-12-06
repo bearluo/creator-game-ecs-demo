@@ -54,11 +54,11 @@ export class RenderSystem extends System {
             /**
              * 转成2.5D坐标
              */
-            let [x, y, scale] = Utils.logicToRender(transform.position.x, transform.position.y);
+            // let [x, y, scale] = Utils.logicToRender(transform.position.x, transform.position.y);
             // 同步位置、旋转、缩放到节点
-            node.setPosition(x, y, 0);
+            node.setPosition(transform.position.x, transform.position.y, 0);
             node.setRotationFromEuler(transform.rotation);
-            node.setScale(transform.scale.x * scale, transform.scale.y * scale, 1);
+            // node.setScale(transform.scale.x * scale, transform.scale.y * scale, 1);
         });
 
         this.faceQuery.forEach((entity) => {
@@ -85,7 +85,7 @@ export class RenderSystem extends System {
                 face.direction = 1;
             }
             
-            node.setScale(node.scale.x * face.direction, node.scale.y, 1);
+            node.setScale(face.direction, node.scale.y, 1);
         });
         
         /**
